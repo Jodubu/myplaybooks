@@ -1,0 +1,61 @@
+---
+- name: New user is created
+  hosts: lab
+  become: true
+  tasks:
+    - name: Create a list of dictionary with each user concerned
+      set_fact: 
+        userdata:
+          - { 'username': 'Jean' , 'password': "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"}
+          - { 'username': 'Pierre' , 'password': "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"}
+          - { 'username': 'Poule' , 'password': "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"}
+      no_log: true
+
+    - name: Create / Update users
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+      loop: "{{ userdata }}"
+      no_log: true
+
+    - name: Display users password
+      debug:
+        msg:
+          - 'Here are the new credentials:'
+          - '{{userdata}}'
+
+    - name: Store password in files
+      copy: content="{{ item.password | password_hash('sha512') }}" dest=./creds
+      loop: "{{ userdata }}"
+      delegate_to: 127.0.0.1
+          
+
+
+#    - name: loop over dict
+#      debug:
+#        msg:
+#          - "Password for"
+#          - "{{ item.user }}"
+#          - " is"
+#          - "{{ item.password }}"
+#      loop: "{{ userdata }}" 
+
+
+#    - name: Load encrypted var
+#      include_vars:
+#        file: ../secret
+#    - name: Display encrypter var
+#      debug:
+#        msg: "{{secret}}"
+##      no_log: true
+#    - name: Serge gets created
+##      user:
+#        name: '{{username[''serge''][''uname'']}}'
+#        comment: '{{username[''serge''][''description'']}}'
+#        password: '{{username[''serge''][''password'']}}'
+#        state: absent
+#    - name: Users list create
+#      user:
+##        name: "{{item}}"
+#        state: absent
+#      loop: "{{myusers}}"
