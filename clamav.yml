@@ -1,0 +1,36 @@
+#This script install ClamAV and if a new version is avaliable, it will update.
+
+---
+- name: ClamAV install
+  hosts: lab
+  vars:
+    ClamAVPackages:
+      - clamav
+      - clamav-daemon
+      - build-essential
+  become: true
+  tasks:
+
+    - name: Install latest version avaliable 
+      ansible.builtin.package:
+       name: "{{item}}"
+       state: latest
+      loop: '{{ClamAVPackages}}'
+
+
+#Ne sert a rien car ansible est idempotant
+ 
+#    - name: Check if foo is installed
+#      ansible.builtin.package:
+#        name: "{{ item }}"
+#        state: present
+#      check_mode: true
+#      loop: "{{ ClamAVPackages }}"
+#      register: package_check
+
+#    - name: "Print execution results"
+#      debug:
+#        msg: "Package is installed"
+#      when: package_check is succeeded
+
+## update only and not install
